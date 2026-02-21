@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from 'react';
+
 const API_URL = 'https://desenvolvimento-backend.l8qthy.easypanel.host';
 
 function App() {
@@ -158,4 +160,4 @@ function App() {
   );
 }
 
-App;
+export default App;
