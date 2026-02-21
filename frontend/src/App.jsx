@@ -1,7 +1,5 @@
 const API_URL = 'https://desenvolvimento-backend.l8qthy.easypanel.host';
 
-const { useState, useEffect } = React;
-
 function App() {
   const [page, setPage] = useState('dashboard');
   const [clientes, setClientes] = useState([]);
@@ -159,3 +157,5 @@ function App() {
     </div>
   );
 }
+
+App;
