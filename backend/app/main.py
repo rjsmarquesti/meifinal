@@ -10,10 +10,15 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="MEI Fiscal API")
 
-# Liberação de CORS para o frontend conseguir conversar com o backend
+# CORS corrigido com os domínios do seu site
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://mei.divulgabr.com.br",
+        "https://api.mei.divulgabr.com.br",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,7 +26,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "MEI Fiscal API está online!"}
+    return {"message": "MEI Fiscal API está online"}
 
 @app.post("/clientes/", response_model=schemas.Cliente)
 def criar_cliente(cliente: schemas.ClienteCreate, db: Session = Depends(database.get_db)):
@@ -49,7 +54,6 @@ def listar_notas(db: Session = Depends(database.get_db)):
 
 @app.get("/dashboard/")
 def get_dashboard(db: Session = Depends(database.get_db)):
-    # Soma corrigida usando func.sum
     faturamento = db.query(func.sum(models.NotaFiscal.valor)).scalar() or 0
     notas_count = db.query(models.NotaFiscal).count()
     return {
