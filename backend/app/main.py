@@ -1,21 +1,22 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
 from . import models, schemas, database
 
-# Cria as tabelas no banco de dados
+# Cria as tabelas no banco de dados ao iniciar
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="MEI Fiscal API")
 
-# CONFIGURAÇÃO DE CORS (LIBERAÇÃO TOTAL)
+# Liberação de CORS para o frontend conseguir conversar com o backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permite qualquer site acessar a API
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Permite todos os métodos (GET, POST, etc)
-    allow_headers=["*"],  # Permite todos os cabeçalhos
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/")
@@ -48,10 +49,11 @@ def listar_notas(db: Session = Depends(database.get_db)):
 
 @app.get("/dashboard/")
 def get_dashboard(db: Session = Depends(database.get_db)):
-    faturamento = db.query(models.NotaFiscal).sum(models.NotaFiscal.valor) or 0
+    # Soma corrigida usando func.sum
+    faturamento = db.query(func.sum(models.NotaFiscal.valor)).scalar() or 0
     notas_count = db.query(models.NotaFiscal).count()
     return {
-        "faturamento_mensal": faturamento,
+        "faturamento_mensal": float(faturamento),
         "notas_emitidas": notas_count,
         "limite_mei": 81000
     }
