@@ -11,11 +11,12 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="MEI Fiscal API")
 
-# CORS: permitir o domínio onde o FRONTEND está rodando
+# CORS: permitir o domínio do FRONTEND e (opcional) o domínio do BACKEND
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://api.mei.divulgabr.com.br",
+        "https://api.mei.divulgabr.com.br",       # frontend (site)
+        "https://backend.mei.divulgabr.com.br",   # backend (api)
         "http://localhost:5173",
         "http://localhost:3000",
     ],
