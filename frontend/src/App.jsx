@@ -59,6 +59,15 @@ function App() {
     } catch (e) { setMsg('Erro de conexão com o servidor.'); }
   }
 
+  async function excluirCliente(id) {
+    if (!window.confirm('Tem certeza que deseja excluir este cliente?')) return;
+    try {
+      await fetch(`${API_URL}/clientes/${id}`, { method: 'DELETE' });
+      setMsg('Cliente excluído com sucesso!');
+      fetchClientes();
+    } catch (e) { setMsg('Erro ao excluir cliente.'); }
+  }
+
   async function emitirNota(e) {
     e.preventDefault();
     try {
@@ -75,6 +84,15 @@ function App() {
         setMsg('Erro ao emitir nota.');
       }
     } catch (e) { setMsg('Erro de conexão com o servidor.'); }
+  }
+
+  async function excluirNota(id) {
+    if (!window.confirm('Tem certeza que deseja excluir esta nota?')) return;
+    try {
+      await fetch(`${API_URL}/notas/${id}`, { method: 'DELETE' });
+      setMsg('Nota excluída com sucesso!');
+      fetchNotas();
+    } catch (e) { setMsg('Erro ao excluir nota.'); }
   }
 
   return (
@@ -128,10 +146,28 @@ function App() {
               <button type="submit" className="md:col-span-2 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Cadastrar Cliente</button>
             </form>
             <table className="w-full border-collapse">
-              <thead><tr className="bg-gray-200"><th className="p-2 text-left">Nome</th><th className="p-2 text-left">Email</th><th className="p-2 text-left">CPF/CNPJ</th><th className="p-2 text-left">Telefone</th></tr></thead>
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="p-2 text-left">Nome</th>
+                  <th className="p-2 text-left">Email</th>
+                  <th className="p-2 text-left">CPF/CNPJ</th>
+                  <th className="p-2 text-left">Telefone</th>
+                  <th className="p-2 text-left">Ações</th>
+                </tr>
+              </thead>
               <tbody>
-                {clientes.length === 0 && <tr><td colSpan="4" className="p-4 text-center text-gray-500">Nenhum cliente cadastrado.</td></tr>}
-                {clientes.map(c => <tr key={c.id} className="border-b"><td className="p-2">{c.nome}</td><td className="p-2">{c.email}</td><td className="p-2">{c.cpf_cnpj}</td><td className="p-2">{c.telefone}</td></tr>)}
+                {clientes.length === 0 && <tr><td colSpan="5" className="p-4 text-center text-gray-500">Nenhum cliente cadastrado.</td></tr>}
+                {clientes.map(c => (
+                  <tr key={c.id} className="border-b">
+                    <td className="p-2">{c.nome}</td>
+                    <td className="p-2">{c.email}</td>
+                    <td className="p-2">{c.cpf_cnpj}</td>
+                    <td className="p-2">{c.telefone}</td>
+                    <td className="p-2">
+                      <button onClick={() => excluirCliente(c.id)} className="text-red-500 hover:text-red-700 font-bold">🗑️ Excluir</button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -147,10 +183,30 @@ function App() {
               <button type="submit" className="md:col-span-3 bg-green-600 text-white py-2 rounded hover:bg-green-700">Emitir Nota</button>
             </form>
             <table className="w-full border-collapse">
-              <thead><tr className="bg-gray-200"><th className="p-2 text-left">ID</th><th className="p-2 text-left">Cliente</th><th className="p-2 text-left">Descrição</th><th className="p-2 text-left">Valor</th><th className="p-2 text-left">Data</th></tr></thead>
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="p-2 text-left">ID</th>
+                  <th className="p-2 text-left">Cliente</th>
+                  <th className="p-2 text-left">Descrição</th>
+                  <th className="p-2 text-left">Valor</th>
+                  <th className="p-2 text-left">Data</th>
+                  <th className="p-2 text-left">Ações</th>
+                </tr>
+              </thead>
               <tbody>
-                {notas.length === 0 && <tr><td colSpan="5" className="p-4 text-center text-gray-500">Nenhuma nota emitida.</td></tr>}
-                {notas.map(n => <tr key={n.id} className="border-b"><td className="p-2">{n.id}</td><td className="p-2">{n.cliente_id}</td><td className="p-2">{n.descricao}</td><td className="p-2">R$ {Number(n.valor).toFixed(2)}</td><td className="p-2">{n.data_emissao}</td></tr>)}
+                {notas.length === 0 && <tr><td colSpan="6" className="p-4 text-center text-gray-500">Nenhuma nota emitida.</td></tr>}
+                {notas.map(n => (
+                  <tr key={n.id} className="border-b">
+                    <td className="p-2">{n.id}</td>
+                    <td className="p-2">{n.cliente_id}</td>
+                    <td className="p-2">{n.descricao}</td>
+                    <td className="p-2">R$ {Number(n.valor).toFixed(2)}</td>
+                    <td className="p-2">{n.data_emissao}</td>
+                    <td className="p-2">
+                      <button onClick={() => excluirNota(n.id)} className="text-red-500 hover:text-red-700 font-bold">🗑️ Excluir</button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
