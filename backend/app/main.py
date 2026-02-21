@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
+
 from . import models, schemas, database
 
 # Cria as tabelas no banco de dados ao iniciar
@@ -10,11 +11,10 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="MEI Fiscal API")
 
-# CORS corrigido com os domínios do seu site
+# CORS: permitir o domínio onde o FRONTEND está rodando
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://mei.divulgabr.com.br",
         "https://api.mei.divulgabr.com.br",
         "http://localhost:5173",
         "http://localhost:3000",
@@ -59,5 +59,5 @@ def get_dashboard(db: Session = Depends(database.get_db)):
     return {
         "faturamento_mensal": float(faturamento),
         "notas_emitidas": notas_count,
-        "limite_mei": 81000
+        "limite_mei": 81000,
     }
