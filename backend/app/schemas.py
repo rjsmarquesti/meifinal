@@ -1,57 +1,50 @@
-# backend/app/schemas.py
-from typing import Optional, List
-try:
-    # pydantic v2
-    from pydantic import BaseModel, ConfigDict
-    PydanticV2 = True
-except Exception:
-    # pydantic v1
-    from pydantic import BaseModel
-    PydanticV2 = False
+from typing import Optional, List, Dict
+from pydantic import BaseModel, ConfigDict
 
+# --- CONFIGURAÇÃO PARA USUÁRIOS (LOGIN E CADASTRO) ---
+class UserBase(BaseModel):
+    username: str
+    email: Optional[str] = None
 
-if PydanticV2:
-    class Cliente(BaseModel):
-        id: int
-        nome: str
-        email: Optional[str] = None
-        model_config = ConfigDict(from_attributes=True)
+class UserCreate(UserBase):
+    password: str
 
-    class NotaCreate(BaseModel):
-        cliente_id: int
-        itens: List[dict]  # adapte conforme sua estrutura
-        total: float
-        model_config = ConfigDict(from_attributes=True)
+class User(UserBase):
+    id: int
+    is_active: bool = True
+    model_config = ConfigDict(from_attributes=True)
 
-    class NotaFiscal(BaseModel):
-        id: int
-        numero: str
-        cliente_id: int
-        total: float
-        model_config = ConfigDict(from_attributes=True)
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
-else:
-    class Cliente(BaseModel):
-        id: int
-        nome: str
-        email: Optional[str] = None
+class TokenData(BaseModel):
+    username: Optional[str] = None
 
-        class Config:
-            orm_mode = True
+# --- CONFIGURAÇÃO PARA CLIENTES ---
+class ClienteBase(BaseModel):
+    nome: str
+    email: Optional[str] = None
+    cpf_cnpj: Optional[str] = None
 
-    class NotaCreate(BaseModel):
-        cliente_id: int
-        itens: List[dict]
-        total: float
+class ClienteCreate(ClienteBase):
+    pass
 
-        class Config:
-            orm_mode = True
+class Cliente(ClienteBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
 
-    class NotaFiscal(BaseModel):
-        id: int
-        numero: str
-        cliente_id: int
-        total: float
+# --- CONFIGURAÇÃO PARA NOTAS FISCAIS ---
+class NotaFiscalBase(BaseModel):
+    cliente_id: int
+    valor_total: float
+    observacoes: Optional[str] = None
 
-        class Config:
-            orm_mode = True
+class NotaFiscalCreate(NotaFiscalBase):
+    pass
+
+class NotaFiscal(NotaFiscalBase):
+    id: int
+    numero: Optional[str] = None
+    data_emissao: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
