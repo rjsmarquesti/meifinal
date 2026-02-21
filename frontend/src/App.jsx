@@ -2,9 +2,10 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# A variável 'app' PRECISA estar aqui fora de qualquer função
+# Criação do app global
 app = FastAPI(title="MEI Fiscal API")
 
+# Configuração de CORS para o frontend conseguir conectar
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,6 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Rota de teste de saúde
 @app.get("/")
 def read_root():
     return {"status": "online", "message": "MEI Fiscal API"}
@@ -21,10 +23,14 @@ def read_root():
 def healthz():
     return {"status": "ok"}
 
-# Fallbacks para o frontend não dar erro de conexão
+# Rotas temporárias para o frontend não dar erro de conexão
 @app.get("/dashboard/")
 def dashboard_fallback():
-    return {"faturamento_mensal": 0.0, "notas_emitidas": 0, "limite_mei": 81000.0}
+    return {
+        "faturamento_mensal": 0.0, 
+        "notas_emitidas": 0, 
+        "limite_mei": 81000.0
+    }
 
 @app.get("/notas/")
 def notas_fallback():
