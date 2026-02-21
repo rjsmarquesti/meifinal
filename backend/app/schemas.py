@@ -1,8 +1,9 @@
+# backend/app/schemas.py
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
-# ── Cliente ──────────────────────────────────────────
+# --- CLIENTES ---
 class ClienteBase(BaseModel):
     nome: str
     email: Optional[str] = None
@@ -18,28 +19,31 @@ class Cliente(ClienteBase):
     criado_em: Optional[datetime] = None
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
-# ── Nota Fiscal ──────────────────────────────────────
+# --- NOTAS ---
 class NotaFiscalBase(BaseModel):
     descricao: str
     valor: float
     cliente_id: int
-    data_emissao: Optional[datetime] = None
 
 class NotaFiscalCreate(NotaFiscalBase):
     pass
 
 class NotaFiscal(NotaFiscalBase):
     id: int
+    data_emissao: Optional[datetime] = None
     criado_em: Optional[datetime] = None
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
-# ── Dashboard ─────────────────────────────────────────
-class DashboardStats(BaseModel):
-    faturamento_mensal: float = 0.0
-    notas_emitidas: int = 0
-    limite_mei: float = 81000.0
-    percentual_utilizado: float = 0.0
+# --- USUÁRIO / AUTH ---
+class UserCreate(BaseModel):
+    nome: Optional[str] = None
+    email: str
+    senha: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
