@@ -56,4 +56,12 @@ def get_dashboard(db: Session = Depends(database.get_db)):
         "faturamento_mensal": float(faturamento),
         "notas_emitidas": notas_count,
         "limite_mei": 81000,
+        @app.delete("/clientes/{cliente_id}")
+def excluir_cliente(cliente_id: int, db: Session = Depends(database.get_db)):
+    db_cliente = db.query(models.Cliente).filter(models.Cliente.id == cliente_id).first()
+    if db_cliente:
+        db.delete(db_cliente)
+        db.commit()
+        return {"message": "Cliente excluído"}
+    return {"error": "Cliente não encontrado"}
     }
