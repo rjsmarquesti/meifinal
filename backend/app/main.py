@@ -1,23 +1,27 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-# Importamos apenas os que preenchemos acima
-from app.routers import dashboard, clientes, notas
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app import database, models, schemas
+from typing import List
 
-app = FastAPI(title="MEI Fiscal API")
+router = APIRouter()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+@router.get("/", response_model=List[schemas.Cliente])
+def listar_clientes(db: Session = Depends(database.get_db)):
+    return db.query(models.Cliente).all()
 
-# Incluindo as rotas principais
-app.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
-app.include_router(clientes.router, prefix="/clientes", tags=["clientes"])
-app.include_router(notas.router, prefix="/notas", tags=["notas"])
+@router.post("/", response_model=schemas.Cliente)
+def criar_cliente(cliente: schemas.ClienteCreate, db: Session = Depends(database.get_db)):
+    db_cliente = models.Cliente(**cliente.dict())
+    db.add(db_cliente)
+    db.commit()
+    db.refresh(db_cliente)
+    return db_cliente
 
-@app.get("/")
-def read_root():
-    return {"message": "API Online"}
+@router.delete("/{cliente_id}")
+def excluir_cliente(cliente_id: int, db: Session = Depends(database.get_db)):
+    db_cliente = db.query(models.Cliente).filter(models.Cliente.id == cliente_id).first()
+    if not db_cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    db.delete(db_cliente)
+    db.commit()
+    return {"message": "Cliente excluído"}
