@@ -1,12 +1,10 @@
-# backend/app/main.py
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# --- app global esperado pelo Uvicorn (uvicorn app.main:app) ---
+# A variável 'app' PRECISA estar aqui fora de qualquer função
 app = FastAPI(title="MEI Fiscal API")
 
-# Habilita CORS para o frontend (troque "*" pelo domínio em produção)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,26 +13,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Endpoints simples de teste
-@app.get("/", tags=["root"])
+@app.get("/")
 def read_root():
-    return {"message": "MEI Fiscal API - OK"}
+    return {"status": "online", "message": "MEI Fiscal API"}
 
-@app.get("/healthz", tags=["health"])
+@app.get("/healthz")
 def healthz():
     return {"status": "ok"}
 
-# Fallbacks úteis (remova quando ligar os routers reais)
-@app.get("/dashboard/", tags=["fallback"])
+# Fallbacks para o frontend não dar erro de conexão
+@app.get("/dashboard/")
 def dashboard_fallback():
     return {"faturamento_mensal": 0.0, "notas_emitidas": 0, "limite_mei": 81000.0}
 
-@app.get("/notas/", tags=["fallback"])
+@app.get("/notas/")
 def notas_fallback():
     return []
 
-# Execução local (não altera o comportamento quando rodado com uvicorn externamente)
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port, log_level="info")
+@app.get("/clientes/")
+def clientes_fallback():
+    return []
