@@ -1,18 +1,13 @@
-FROM node:20-alpine
-
+# Estágio 1: Construir o app
+FROM node:20-alpine as build
 WORKDIR /app
-
-# Copia os arquivos de dependências
 COPY package*.json ./
-
-# Instala as dependências
 RUN npm install
-
-# Copia todo o resto dos arquivos da pasta frontend
 COPY . .
+RUN npm run build
 
-# Expõe a porta do Vite
-EXPOSE 5173
-
-# Comando para rodar o Vite garantindo que ele olhe para a pasta atual
-CMD ["npx", "vite", "--host", "0.0.0.0", "--port", "5173"]
+# Estágio 2: Servir com Nginx
+FROM nginx:stable-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
