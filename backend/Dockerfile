@@ -1,14 +1,18 @@
-# backend/Dockerfile
 FROM python:3.10-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
-# Copia requirements a partir da raiz da pasta backend
+# CORREÇÃO: Busca o arquivo na raiz da pasta backend
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia todo o conteúdo da pasta backend para /app no container
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc libpq-dev build-essential \
+    && pip install --no-cache-dir -r requirements.txt \
+    && apt-get remove -y gcc build-essential \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY . .
 
 ENV PYTHONPATH=/app
