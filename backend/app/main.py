@@ -1,15 +1,11 @@
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+# Importação direta do router para garantir que o atributo seja encontrado
+from app.routers.auth import router as auth_router
 
-from app import models, database
-from app.routers import auth, clientes, notas
+app = FastAPI(title="MEI Online API")
 
-# Cria as tabelas no banco de dados automaticamente
-models.Base.metadata.create_all(bind=database.engine)
-
-app = FastAPI(title="MEI Fiscal - API")
-
+# Configuração de CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,15 +14,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Inclui as rotas
-app.include_router(auth.router, prefix="/auth", tags=["Autenticação"])
-app.include_router(clientes.router, prefix="/clientes", tags=["Clientes"])
-app.include_router(notas.router, prefix="/notas", tags=["Notas"])
-
-@app.get("/healthz")
-async def healthz():
-    return {"status": "ok"}
+# Incluindo o router de autenticação
+app.include_router(auth_router, prefix="/auth", tags=["Autenticação"])
 
 @app.get("/")
-async def root():
-    return {"message": "API Online"}
+def read_root():
+    return {"status": "online", "message": "API MEI Online rodando com sucesso"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
