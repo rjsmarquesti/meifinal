@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API_URL = 'https://desenvolvimento-backend.l8qthy.easypanel.host';
+const API_URL = 'https://backend.mei.divulgabr.com.br';
 
 function App() {
   const [page, setPage] = useState('dashboard');
