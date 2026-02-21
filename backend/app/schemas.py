@@ -1,44 +1,57 @@
 # backend/app/schemas.py
-from pydantic import BaseModel, EmailStr
 from typing import Optional, List
+try:
+    # pydantic v2
+    from pydantic import BaseModel, ConfigDict
+    PydanticV2 = True
+except Exception:
+    # pydantic v1
+    from pydantic import BaseModel
+    PydanticV2 = False
 
-# --- Clientes ---
-class ClienteBase(BaseModel):
-    nome: str
-    email: Optional[EmailStr] = None
-    cpf: Optional[str] = None
-    telefone: Optional[str] = None
 
-class ClienteCreate(ClienteBase):
-    pass
+if PydanticV2:
+    class Cliente(BaseModel):
+        id: int
+        nome: str
+        email: Optional[str] = None
+        model_config = ConfigDict(from_attributes=True)
 
-class Cliente(ClienteBase):
-    id: int
+    class NotaCreate(BaseModel):
+        cliente_id: int
+        itens: List[dict]  # adapte conforme sua estrutura
+        total: float
+        model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
+    class NotaFiscal(BaseModel):
+        id: int
+        numero: str
+        cliente_id: int
+        total: float
+        model_config = ConfigDict(from_attributes=True)
 
-# --- Notas (NF-e / simples) ---
-class NotaBase(BaseModel):
-    cliente_id: int
-    valor: float
-    descricao: Optional[str] = None
+else:
+    class Cliente(BaseModel):
+        id: int
+        nome: str
+        email: Optional[str] = None
 
-class NotaCreate(NotaBase):
-    pass
+        class Config:
+            orm_mode = True
 
-class Nota(NotaBase):
-    id: int
+    class NotaCreate(BaseModel):
+        cliente_id: int
+        itens: List[dict]
+        total: float
 
-    class Config:
-        orm_mode = True
+        class Config:
+            orm_mode = True
 
-# --- Auth / Usuário (mínimo para endpoints de login/register) ---
-class UserCreate(BaseModel):
-    username: str
-    password: str
-    email: Optional[EmailStr] = None
+    class NotaFiscal(BaseModel):
+        id: int
+        numero: str
+        cliente_id: int
+        total: float
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
+        class Config:
+            orm_mode = True
