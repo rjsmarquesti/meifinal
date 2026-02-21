@@ -1,48 +1,14 @@
-from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime
+from pydantic import BaseModel, EmailStr
+from typing import Optional
 
-# --- CLIENTES ---
-class ClienteBase(BaseModel):
-    nome: str
-    email: Optional[str] = None
-    cpf_cnpj: Optional[str] = None
-    telefone: Optional[str] = None
-    endereco: Optional[str] = None
-
-class ClienteCreate(ClienteBase):
-    pass
-
-class Cliente(ClienteBase):
-    id: int
-    criado_em: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-# --- NOTAS ---
-class NotaFiscalBase(BaseModel):
-    descricao: str
-    valor: float
-    cliente_id: int
-
-class NotaFiscalCreate(NotaFiscalBase):
-    pass
-
-class NotaFiscal(NotaFiscalBase):
-    id: int
-    data_emissao: Optional[datetime] = None
-    criado_em: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-# --- USUÁRIO / AUTH ---
 class UserCreate(BaseModel):
-    nome: Optional[str] = None
-    email: str
+    email: EmailStr
     senha: str
+    nome: str
 
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class TokenData(BaseModel):
+    email: Optional[str] = None
