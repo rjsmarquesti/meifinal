@@ -1,39 +1,56 @@
-# backend/app/routers/notas.py
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+import logging
 
 from app import models, schemas
 from app.database import get_db
-# opcional: proteger rotas -> from app.routers.auth import get_current_user
+
+logger = logging.getLogger("notas")
+logger.setLevel(logging.INFO)
 
 router = APIRouter()
 
-@router.get("/", response_model=List[schemas.NotaFiscal])
-def listar_notas(db: Session = Depends(get_db)):
-    return db.query(models.NotaFiscal).all()
-
-@router.post("/", response_model=schemas.NotaFiscal, status_code=status.HTTP_201_CREATED)
-def emitir_nota(nota: schemas.NotaFiscalCreate, db: Session = Depends(get_db)):
-    cliente = db.query(models.Cliente).filter(models.Cliente.id == nota.cliente_id).first()
-    if not cliente:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente não encontrado")
-    db_nota = models.NotaFiscal(**nota.dict())
-    db.add(db_nota)
+@router.get("/", response_model=List[schemas.Nota])
+def listar_notas(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     try:
-        db.commit()
-        db.refresh(db_nota)
-        return db_nota
+        return db.query(models.Nota).offset(skip).limit(limit).all()
     except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Erro ao emitir nota: {str(e)}")
+        logger.exception("Erro ao listar notas: %s", e)
+        raise HTTPException(status_code=500, detail="Erro interno ao listar notas")
 
-@router.delete("/{nota_id}", status_code=status.HTTP_200_OK)
-def excluir_nota(nota_id: int, db: Session = Depends(get_db)):
-    db_nota = db.query(models.NotaFiscal).filter(models.NotaFiscal.id == nota_id).first()
-    if not db_nota:
-        raise HTTPException(status_code=404, detail="Nota não encontrada")
-    db.delete(db_nota)
-    db.commit()
-    return {"message": "Nota excluída"}
+@router.post("/", response_model=schemas.Nota, status_code=status.HTTP_201_CREATED)
+def emitir_nota(nota: schemas.NotaCreate, db: Session = Depends(get_db)):
+    try:
+        # Verifica se cliente existe
+        cliente = db.query(models.Cliente).filter(models.Cliente.id == nota.cliente_id).first()
+        if not cliente:
+            raise HTTPException(status_code=404, detail="Cliente não encontrado para emitir nota")
+
+        novo = models.Nota(
+            cliente_id=nota.cliente_id,
+            valor=nota.valor,
+            descricao=nota.descricao,
+        )
+        db.add(novo)
+        db.commit()
+        db.refresh(novo)
+        return novo
+    except Exception as e:
+        logger.exception("Erro ao emitir nota: %s", e)
+        try:
+            db.rollback()
+        except Exception:
+            logger.exception("Rollback falhou")
+        raise HTTPException(status_code=500, detail="Erro interno ao emitir nota")
+
+@router.get("/{nota_id}", response_model=schemas.Nota)
+def obter_nota(nota_id: int, db: Session = Depends(get_db)):
+    try:
+        n = db.query(models.Nota).filter(models.Nota.id == nota_id).first()
+        if not n:
+            raise HTTPException(status_code=404, detail="Nota não encontrada")
+        return n
+    except Exception as e:
+        logger.exception("Erro ao obter nota %s: %s", nota_id, e)
+        raise HTTPException(status_code=500, detail="Erro interno ao obter nota")
