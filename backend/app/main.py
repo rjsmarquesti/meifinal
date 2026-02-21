@@ -14,13 +14,8 @@ app = FastAPI(title="MEI Fiscal API")
 # CORS: permitir o domínio do FRONTEND e (opcional) o domínio do BACKEND
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://api.mei.divulgabr.com.br",       # frontend (site)
-        "https://backend.mei.divulgabr.com.br",   # backend (api)
-        "http://localhost:5173",
-        "http://localhost:3000",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
