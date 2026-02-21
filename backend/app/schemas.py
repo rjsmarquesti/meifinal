@@ -1,4 +1,3 @@
-# backend/app/schemas.py
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
@@ -19,7 +18,7 @@ class Cliente(ClienteBase):
     criado_em: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # --- NOTAS ---
 class NotaFiscalBase(BaseModel):
@@ -36,7 +35,7 @@ class NotaFiscal(NotaFiscalBase):
     criado_em: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # --- USUÁRIO / AUTH ---
 class UserCreate(BaseModel):
